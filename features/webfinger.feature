@@ -19,10 +19,14 @@ Feature: Webfinger discovery
         {
           "rel": "self",
           "type": "application/activity+json",
-          "href": "http://localhost/u/peter-lustig"
+          "href": "http://localhost/users/peter-lustig"
         }
       ]
     }
+    """
+    Then I expect the Content-Type to be:
+    """
+    application/jrd+json; charset=utf-8
     """
 
   Scenario: User does not exist
@@ -30,6 +34,6 @@ Feature: Webfinger discovery
     Then I receive the following json:
     """
     {
-      "error: "No record found for roschaefer@localhost."
+      "error": "No record found for nonexisting@localhost."
     }
     """
