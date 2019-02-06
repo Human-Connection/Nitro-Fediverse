@@ -15,9 +15,15 @@
   "engines": {
     "node": ">=10.10.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "cucumber": "^5.1.0",
+    "npm-run-all": "^4.1.5",
+    "wait-on": "^3.2.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "node index.js",
+    "test:cucumber": "wait-on tcp:4100 && cucumber-js",
+    "test": "run-p --race server test:cucumber"
   },
   "author": "",
   "license": "MIT"
