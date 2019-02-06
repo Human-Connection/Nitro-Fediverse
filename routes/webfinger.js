@@ -1,23 +1,34 @@
-'use strict';
+'use strict'
 const express = require('express'),
-      router = express.Router();
+      router = express.Router(),
+      client = require('../apollo-client'),
+      { createWebFinger } = require('../utils'),
+      gql = require('graphql-tag')
 
-router.get('/', function (req, res) {
-  let resource = req.query.resource;
+router.get('/', async function (req, res) {
+  const resource = req.query.resource;
   if (!resource || !resource.includes('acct:')) {
     return res.status(400).send('Bad request. Please make sure "acct:USER@DOMAIN" is what you are sending as the "resource" query parameter.');
-  }
-  else {
-    let name = resource.replace('acct:','');
-    let db = req.app.get('db');
-    db.get('select webfinger from accounts where name = $name', {$name: name}, (err, result) => {
-      if (result === undefined) {
-        return res.status(404).send(`No record found for ${name}.`);
-      }
-      else {
-        res.json(JSON.parse(result.webfinger));
-      }
-    });
+  } else {
+    const nameAndDomain = resource.replace('acct:','');
+    const name = nameAndDomain.split('@')[0];
+
+    const result = await client.query({
+      query: gql`
+        query {
+          User(slug: "${name}") {
+            slug
+          }
+        }
+      `
+    })
+
+    if (result.data && result.data.User.length > 0) {
+      const webFinger = createWebFinger(name, req.app.get('domain'));
+      res.contentType('application/jrd+json').json(webFinger);
+    } else {
+      return res.status(404).json({ error: `No record found for ${nameAndDomain}.` });
+    }
   }
 });
 
