@@ -11,7 +11,7 @@ Feature: Webfinger discovery
 
   Scenario: Search
     When I send a GET request to "/.well-known/webfinger?resource=acct:peter-lustig@localhost"
-    Then I receive the following
+    Then I receive the following json:
     """
     {
       "subject": "acct:peter-lustig@localhost",
@@ -22,5 +22,14 @@ Feature: Webfinger discovery
           "href": "http://localhost/u/peter-lustig"
         }
       ]
+    }
+    """
+
+  Scenario: User does not exist
+    When I send a GET request to "/.well-known/webfinger?resource=acct:nonexisting@localhost"
+    Then I receive the following json:
+    """
+    {
+      "error: "No record found for roschaefer@localhost."
     }
     """

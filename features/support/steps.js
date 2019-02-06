@@ -21,6 +21,6 @@ When('I send a GET request to {string}', async function (url) {
   this.lastResponse = await res.json()
 });
 
-Then('I receive the following', function (docString) {
+Then('I receive the following json:', function (docString) {
   expect(this.lastResponse).to.eql(JSON.parse(docString))
 });
