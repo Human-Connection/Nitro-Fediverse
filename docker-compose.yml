@@ -1,0 +1,17 @@
+version: "3.7"
+
+services:
+  fediverse:
+    image: humanconnection/nitro-fediverse:latest
+    build:
+      context: .
+    networks:
+      - hc-network
+    ports:
+      - 4100:4100
+    environment:
+      - DOMAIN=localhost
+
+networks:
+  hc-network:
+    name: hc-network
