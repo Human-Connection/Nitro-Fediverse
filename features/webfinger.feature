@@ -24,7 +24,7 @@ Feature: Webfinger discovery
       ]
     }
     """
-    Then I expect the Content-Type to be:
+    And I expect the Content-Type to be:
     """
     application/jrd+json; charset=utf-8
     """

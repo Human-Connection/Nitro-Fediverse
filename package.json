@@ -1,7 +1,7 @@
 {
-  "name": "bot-node",
-  "version": "1.0.0",
-  "description": "",
+  "name": "Nitro-Fediverse",
+  "version": "0.0.1",
+  "description": "Implementation of a federated ActivityPub Server",
   "main": "index.js",
   "dependencies": {
     "activitystrea.ms": "^2.1.3",

@@ -25,7 +25,7 @@ router.get('/', async function (req, res) {
 
     if (result.data && result.data.User.length > 0) {
       const webFinger = createWebFinger(name, req.app.get('domain'));
-      res.contentType('application/jrd+json').json(webFinger);
+      return res.contentType('application/jrd+json').json(webFinger);
     } else {
       return res.status(404).json({ error: `No record found for ${nameAndDomain}.` });
     }
