@@ -1,7 +1,7 @@
 // features/support/steps.js
 const { Given, When, Then } = require('cucumber')
 const { expect } = require('chai')
-const client = require('../../apollo-client')
+const client = require('../../../src/apollo-client')
 const gql = require('graphql-tag')
 
 const fediverseUrl = 'http://localhost:4100'

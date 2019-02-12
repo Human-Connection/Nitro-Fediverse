@@ -1,7 +1,6 @@
 const crypto = require('crypto')
 const { signAndSend } = require('./signing')
 const as = require('activitystrea.ms')
-//const CODES = require('../CodesEnum')
 
 module.exports = {
     parseJSON: (text) => {
@@ -17,6 +16,9 @@ module.exports = {
         const splitted = pathname.split('/')
 
         return splitted[splitted.length - 1]
+    },
+    extractDomainFromUrl(url) {
+        return new URL(url).hostname;
     },
     createActor(name, domain, pubkey) {
         return {

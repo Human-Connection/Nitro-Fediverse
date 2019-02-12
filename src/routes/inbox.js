@@ -2,9 +2,10 @@
 const express = require('express'),
       crypto = require('crypto'),
       request = require('request'),
-      router = express.Router();
+      router = express.Router(),
+      { extractNameFromUrl } = require('../utils');
 
-function signAndSend(message, name, domain, req, res, targetDomain) { 
+function signAndSend(message, name, domain, req, res, targetDomain) {
   // get the private key
   let db = req.app.get('db');
   db.get('select privkey from accounts where name = $name', {$name: `${name}@${domain}`}, (err, result) => {
