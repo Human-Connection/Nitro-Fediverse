@@ -15,12 +15,12 @@ Feature: Follow a user
       "@context": "https://www.w3.org/ns/activitystreams",
       "id": "https://localhost:4100/users/karl-heinz/status/83J23549sda1k72fsa4567na42312455kad83",
       "type": "Follow",
-      "actor": "http://localhost:4100/users/peter-lustiger",
+      "actor": "https://localhost:4100/users/peter-lustiger",
       "object": "http://localhost:4100/users/karl-heinz"
     }
     """
     Then the status code is 200
     And the follower is added to the followers collection
     """
-    http://localhost:4100/users/peter-lustiger
+    https://localhost:4100/users/peter-lustiger
     """

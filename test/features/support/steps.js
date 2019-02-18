@@ -3,7 +3,7 @@ const { Given, When, Then, AfterAll} = require('cucumber')
 const { expect } = require('chai')
 const client = require('../../../src/apollo-client')
 const gql = require('graphql-tag')
-const debug = require('debug')('ea:test:step')
+const debug = require('debug')('ea:test:steps')
 
 const fediverseUrl = 'http://localhost:4100'
 
@@ -22,11 +22,11 @@ async function createUser(slug) {
   })
   expect(res.data.CreateUser.slug).to.equal(slug)
   currentUserIds.push(res.data.CreateUser.id)
-  console.log(`\n\nuser created with id = ${res.data.CreateUser.id}`)
+  debug(`\nuser created with id = ${res.data.CreateUser.id}`)
 }
 
 AfterAll('', function () {
-  console.log('All the tests are done! Deleting Users --> ' + currentUserIds)
+  debug('All the tests are done! Deleting Users --> ' + currentUserIds)
   currentUserIds.forEach(async (id) => {
     await client.mutate({
       mutation: gql`
