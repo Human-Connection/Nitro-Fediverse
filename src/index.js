@@ -1,8 +1,11 @@
-const express = require('express')
+import NitroDatasource from "./NitroDatasource"
+import ActivityPub from './ActivityPub'
+import express from 'express'
+import fs from 'fs'
 const app = express()
 const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('bot-node.db')
-const fs = require('fs')
+
 const routes = require('./routes'),
     bodyParser = require('body-parser'),
     cors = require('cors'),
@@ -29,9 +32,14 @@ try {
 // if there is no `accounts` table in the DB, create an empty table
 db.run('CREATE TABLE IF NOT EXISTS accounts (name TEXT PRIMARY KEY, privkey TEXT, pubkey TEXT, webfinger TEXT, actor TEXT, apikey TEXT, followers TEXT, messages TEXT)')
 
+const datasource = new NitroDatasource(process.env.DOMAIN)
+const ap = new ActivityPub(process.env.DOMAIN || 'localhost', process.env.PORT || 4100, datasource)
+
 app.set('db', db)
-app.set('domain', process.env.DOMAIN)
-app.set('port', process.env.PORT || process.env.PORT || 3000)
+app.set('ap', ap)
+export default ap
+app.set('domain', process.env.DOMAIN || 'localhost')
+app.set('port', process.env.PORT || 4100)
 app.set('port-https', process.env.PORT_HTTPS || 8443)
 app.use(bodyParser.json({type: 'application/activity+json'})) // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
@@ -64,7 +72,7 @@ app.use('/api', cors(), routes.api)
 app.use('/api/admin', cors({ credentials: true, origin: true }), basicUserAuth, routes.admin)
 app.use('/admin', express.static('public/admin'))
 app.use('/.well-known/webfinger', cors(), routes.webfinger)
-app.use('/u', cors(), routes.user)
+app.use('/users', cors(), routes.user)
 app.use('/api/inbox', cors(), routes.inbox)
 
 http.createServer(app).listen(app.get('port'), function(){
