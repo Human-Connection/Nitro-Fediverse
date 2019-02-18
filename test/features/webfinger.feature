@@ -14,12 +14,12 @@ Feature: Webfinger discovery
     Then I receive the following json:
     """
     {
-      "subject": "acct:peter-lustig@localhost",
+      "subject": "acct:peter-lustig@localhost:4100",
       "links": [
         {
           "rel": "self",
           "type": "application/activity+json",
-          "href": "http://localhost/users/peter-lustig"
+          "href": "https://localhost:4100/users/peter-lustig"
         }
       ]
     }

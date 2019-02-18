@@ -8,6 +8,8 @@ class CustomWorld {
     // webfinger.feature
     this.lastResponse = null
     this.lastContentType = null
+    this.lastInboxUrl = null
+    this.lastActivity = null
     // activity-note.feature
     this.statusCode = null
   }
@@ -16,7 +18,7 @@ class CustomWorld {
       request(`http://localhost:4100/${this.replaceSlashes(pathname)}`, function (error, response, body) {
         if (!error) {
           debug(`get response = ${response.headers['content-type']}`)
-          resolve({ lastResponse: JSON.parse(body), lastContentType: response.headers['content-type'], statusCode: response.statusCode})
+          resolve({ lastResponse: body, lastContentType: response.headers['content-type'], statusCode: response.statusCode})
         } else {
           reject({})
         }
@@ -40,7 +42,7 @@ class CustomWorld {
       }, function (error, response, body) {
         if (!error) {
           debug(`post response = ${response.headers['content-type']}`)
-          resolve({ lastResponse: JSON.parse(body), lastContentType: response.headers['content-type'], statusCode: response.statusCode})
+          resolve({ lastResponse: body, lastContentType: response.headers['content-type'], statusCode: response.statusCode})
         } else {
           reject({})
         }
