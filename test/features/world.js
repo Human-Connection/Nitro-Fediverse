@@ -6,11 +6,11 @@ const debug = require('debug')('hc-ap:world')
 class CustomWorld {
   constructor() {
     // webfinger.feature
-    this.lastResponse = null
+    this.lastResponses = []
     this.lastContentType = null
     this.lastInboxUrl = null
     this.lastActivity = null
-    // activity-note.feature
+    // activity-article.feature.disabled
     this.statusCode = null
   }
   get(pathname) {
