@@ -4,12 +4,20 @@ import as from 'activitystrea.ms'
 import ap from '../index'
 const debug = require('debug')('ea:utils')
 
-export function extractNameFromId(url) {
-    const urlObject = new URL(url)
+export function extractNameFromId(uri) {
+    const urlObject = new URL(uri)
     const pathname = urlObject.pathname
     const splitted = pathname.split('/')
 
     return splitted[splitted.indexOf('users') + 1]
+}
+
+export function extractIdFromActivityId(uri) {
+  const urlObject = new URL(uri)
+  const pathname = urlObject.pathname
+  const splitted = pathname.split('/')
+
+  return splitted[splitted.indexOf('status') + 1]
 }
 
 export function constructIdFromName(name) {
@@ -127,27 +135,42 @@ export function createOrderedCollectionPage(name, collectionName) {
     }
 }
 
-export function createNoteActivity(text, name) {
+export function createNoteActivity(text, name, id, published) {
     const createUuid = crypto.randomBytes(16).toString('hex')
-    const noteUuid = crypto.randomBytes(16).toString('hex')
-    let d = new Date()
 
     return {
         '@context': 'https://www.w3.org/ns/activitystreams',
-
         'id': `https://${ap.domain}/users/${name}/status/${createUuid}`,
         'type': 'Create',
         'actor': `https://${ap.domain}/users/${name}`,
-
         'object': {
-            'id': `https://${ap.domain}/users/${name}/status/${noteUuid}`,
+            'id': `https://${ap.domain}/users/${name}/status/${id}`,
             'type': 'Note',
-            'published': d.toISOString(),
+            'published': published,
             'attributedTo': `https://${ap.domain}/users/${name}`,
             'content': text,
             'to': 'https://www.w3.org/ns/activitystreams#Public'
         }
     }
+}
+
+export function createArticleActivity(text, name, id, published) {
+  const createUuid = crypto.randomBytes(16).toString('hex')
+
+  return {
+    '@context': 'https://www.w3.org/ns/activitystreams',
+    'id': `https://${ap.domain}/users/${name}/status/${createUuid}`,
+    'type': 'Create',
+    'actor': `https://${ap.domain}/users/${name}`,
+    'object': {
+      'id': `https://${ap.domain}/users/${name}/status/${id}`,
+      'type': 'Article',
+      'published': published,
+      'attributedTo': `https://${ap.domain}/users/${name}`,
+      'content': text,
+      'to': 'https://www.w3.org/ns/activitystreams#Public'
+    }
+  }
 }
 
 export function sendAcceptActivity(theBody, name, targetDomain, url) {
@@ -178,4 +201,10 @@ export function sendRejectActivity(theBody, name, targetDomain, url) {
                 throw new Error(`error serializing Accept object`)
             }
         })
+}
+
+export function throwErrorIfGraphQLErrorOccurred(result) {
+  if (result.error && (result.error.message || result.error.errors)) {
+    throw new Error(`${result.error.message ? result.error.message : result.error.errors[0].message}`)
+  }
 }
