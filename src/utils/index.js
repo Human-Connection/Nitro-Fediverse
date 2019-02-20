@@ -3,7 +3,12 @@ import { signAndSend } from './signing'
 import as from 'activitystrea.ms'
 import ap from '../index'
 const debug = require('debug')('ea:utils')
-
+const MongoClient = require('mongodb').MongoClient
+const url = 'mongodb://localhost:27017';
+let db = null
+MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
+  db = client.db('activitypub')
+})
 export function extractNameFromId(uri) {
     const urlObject = new URL(uri)
     const pathname = urlObject.pathname
@@ -20,12 +25,30 @@ export function extractIdFromActivityId(uri) {
   return splitted[splitted.indexOf('status') + 1]
 }
 
-export function constructIdFromName(name) {
-    return `https://${ap.domain}/users/${name}`
+export function constructIdFromName(name, fromDomain = ap.domain) {
+    return `https://${fromDomain}/users/${name}`
 }
 
 export function extractDomainFromUrl(url) {
     return new URL(url).hostname;
+}
+
+export async function saveActorId(actorId) {
+  const name = extractNameFromId(actorId)
+  const collection = db.collection('actorIds')
+  // TODO first check for existence before insert (maybe updateOne)
+  const obj = {}
+  obj[name] = actorId
+  return await collection.insertOne(obj)
+}
+
+export async function getActorIdByName(name) {
+  const obj = {}
+  debug(`name = ${name}`)
+  obj[name] = { $exists: true }
+  const result = await db.collection('actorIds').find(obj).next()
+  debug(`result = ${JSON.stringify(result, null, 2)}`)
+  return result[name]
 }
 
 export function sendCollection(collectionName, req, res) {

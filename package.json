@@ -27,8 +27,8 @@
     "generate-rsa-keypair": "^0.1.2",
     "graphql": "^14.1.1",
     "graphql-tag": "^2.10.1",
-    "request": "^2.88.0",
-    "sqlite3": "^4.0.2"
+    "mongodb": "^3.1.13",
+    "request": "^2.88.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

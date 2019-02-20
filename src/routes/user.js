@@ -1,5 +1,5 @@
 'use strict'
-import { sendCollection } from "../utils"
+import { sendCollection, saveActorId } from "../utils"
 import express from 'express'
 const router = express.Router()
 const debug = require('debug')('ea:user')
@@ -46,7 +46,9 @@ router.get('/:name/outbox', (req, res) => {
 router.post('/:name/inbox', async function (req, res, next) {
   debug(`body = ${JSON.stringify(req.body, null, 2)}`)
   const name = req.params.name
-
+  debug(`actorId = ${req.body.actor}`)
+  const result = await saveActorId(req.body.actor)
+  debug(`mongodb result = ${result}`)
   switch (req.body.type) {
     case 'Create':
       await req.app.get('ap').handleCreateActivity(req.body).catch(next)
