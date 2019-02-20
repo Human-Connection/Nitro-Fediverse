@@ -47,7 +47,7 @@ export default class ActivityPub {
 
         return new Promise((resolve, reject) => {
             request({
-                url: activity.object,
+                url: activity.actor,
                 headers: {
                     'Accept': 'application/activity+json'
                 }
@@ -98,7 +98,7 @@ export default class ActivityPub {
         switch (activity.object.type) {
             case 'Follow':
                 const followActivity = activity.object
-                await this.dataSource.undoFollowActivity(followActivity.object, followActivity.actor)
+                await this.dataSource.undoFollowActivity(followActivity.actor, followActivity.object)
                 break
             default:
 
