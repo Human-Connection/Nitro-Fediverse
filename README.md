@@ -14,6 +14,8 @@ Switch in the folder
 ```sh
 cd Nitro-Fediverse
 ```
+### Prerequisite
+[Mongodb](https://docs.mongodb.com/manual/installation/#tutorials) need to be installed. It is used to store all ActivityPub related meta data. 
 
 ## Installation and Usage without Docker
 
@@ -93,6 +95,10 @@ DOMAIN=9bab9fd1.ngrok.io docker-compose up
 ```
 depending on your setup.
 
+## Debugging
+This repository uses [debug](https://www.npmjs.com/package/debug) as logging tool. Just take a look at the imports of a file and search for e.g. `require('debug')('ea:utils')`. If you  want to see the debugging output for this specific file, run one of the above commands prefixed with `DEBUG=ea:utils`.  
+
+You can also see all debugging output available by prefixing with `DEBUG=ea*`.
 
 ## Deployment
 
