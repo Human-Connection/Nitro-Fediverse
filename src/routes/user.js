@@ -32,17 +32,6 @@ router.get('/:name/followers', (req, res) => {
   }
 })
 
-router.get('/:name/inbox', (req, res) => {
-  debug('inside user.js -> serveInboxCollection')
-  const name = req.params.name
-  if (!name) {
-    return res.status(400).send('Bad request! Please specify a name.')
-  } else {
-    const collectionName = req.query.page ? 'inboxPage' : 'inbox'
-    sendCollection(collectionName, req, res)
-  }
-})
-
 router.get('/:name/outbox', (req, res) => {
   debug('inside user.js -> serveOutboxCollection')
   const name = req.params.name
