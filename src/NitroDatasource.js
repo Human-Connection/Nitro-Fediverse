@@ -1,5 +1,5 @@
 import client from './apollo-client'
-import { createNoteActivity, createOrderedCollection, createOrderedCollectionPage, extractNameFromId, constructIdFromName } from './utils'
+import { throwErrorIfGraphQLErrorOccurred, createNoteActivity, extractIdFromActivityId, createOrderedCollection, createOrderedCollectionPage, extractNameFromId, constructIdFromName } from './utils'
 const gql = require('graphql-tag')
 const debug = require('debug')('ea:nitro-datasource')
 import crypto from 'crypto'
@@ -32,8 +32,7 @@ export default class NitroDatasource {
 
       return followersCollection
     } else {
-      debug(`error fetching data from graqhql api\n ${result.error}`)
-      throw new Error(result.error)
+      throwErrorIfGraphQLErrorOccurred(result)
     }
   }
 
@@ -70,8 +69,7 @@ export default class NitroDatasource {
 
       return followersCollection
     } else {
-      debug(`error fetching data from graqhql api\n ${result.error}`)
-      throw new Error(result.error)
+      throwErrorIfGraphQLErrorOccurred(result)
     }
 
   }
@@ -93,13 +91,12 @@ export default class NitroDatasource {
       const actor = result.data.User[0]
       const followingCount = actor.followingCount
 
-      const followingCollection = createOrderedCollection(slug, 'followers')
+      const followingCollection = createOrderedCollection(slug, 'following')
       followingCollection.totalItems = followingCount
 
       return followingCollection
     } else {
-      debug(`error fetching data from graqhql api\n ${result.error}`)
-      throw new Error(result.error)
+      throwErrorIfGraphQLErrorOccurred(result)
     }
   }
 
@@ -135,8 +132,7 @@ export default class NitroDatasource {
 
       return followingCollection
     } else {
-      debug(`error fetching data from graqhql api\n ${result.error}`)
-      throw new Error(result.error)
+      throwErrorIfGraphQLErrorOccurred(result)
     }
   }
 
@@ -168,8 +164,7 @@ export default class NitroDatasource {
 
       return outboxCollection
     } else {
-      debug(`error fetching data from graqhql api\n ${result.error}`)
-      throw new Error(result.error)
+      throwErrorIfGraphQLErrorOccurred(result)
     }
   }
 
@@ -180,6 +175,7 @@ export default class NitroDatasource {
           query {
               User(slug:"${slug}") {
                   contributions {
+                      id
                       title
                       slug
                       content
@@ -198,41 +194,49 @@ export default class NitroDatasource {
 
       const outboxCollection = createOrderedCollectionPage(slug, 'outbox')
       outboxCollection.totalItems = posts.length
-      await Promise.all([
-        posts.forEach((post) => {
-          outboxCollection.orderedItems.push(createNoteActivity(post.content, slug))
+      await Promise.all(
+        posts.map((post) => {
+          outboxCollection.orderedItems.push(createNoteActivity(post.content, slug, post.id, post.createdAt))
         })
-      ])
+      )
 
       debug(`after createNote`)
       return outboxCollection
     } else {
-      debug(`error fetching data from graqhql api\n ${result.error}`)
-      throw new Error(result.error)
+      throwErrorIfGraphQLErrorOccurred(result)
     }
   }
 
-  async saveFollowersCollection(followers) {
-    const slug = extractNameFromId(followers.id)
-    await this.ensureUser(constructIdFromName(slug))
-    const totalItems = followers.totalItems
-    await client.mutate({
+  async undoFollowActivity(fromActorId, toActorId) {
+    const fromUserId = await this.ensureUser(fromActorId)
+    const toUserId = await this.ensureUser(toActorId)
+    const result = await client.mutate({
       mutation: gql`
-        mutation {
-            setFollowingCount(followingCount: ${totalItems}, slug: "${slug}")
-        }
+          mutation {
+              RemoveUserFollowedBy(from: {id: "${fromUserId}"}, to: {id: "${toUserId}"}) {
+                  from { name }
+              }
+          }
       `
     })
+    debug(`undoFollowActivity result = ${JSON.stringify(result, null, 2)}`)
+    throwErrorIfGraphQLErrorOccurred(result)
   }
 
-  async saveFollowersCollectionPage(followers) {
-    const orderedItems = followers.orderedItems
-    const toUserName = extractNameFromId(followers.id)
+  async saveFollowersCollectionPage(followersCollection, onlyNewestItem = true) {
+    debug(`inside saveFollowers`)
+    let orderedItems = followersCollection.orderedItems
+    const toUserName = extractNameFromId(followersCollection.id)
     const toUserId = await this.ensureUser(constructIdFromName(toUserName))
+    orderedItems = onlyNewestItem ? [orderedItems.pop()] : orderedItems
 
-    return Promise.all(
+    return await Promise.all(
       orderedItems.map(async (follower) => {
+        debug(`toUserName = ${toUserName}`)
+        debug(`follower = ${follower}`)
         const fromUserId = await this.ensureUser(follower)
+        debug(`fromUserId = ${fromUserId}`)
+        debug(`toUserId = ${toUserId}`)
         const result = await client.mutate({
           mutation: gql`
               mutation {
@@ -242,11 +246,68 @@ export default class NitroDatasource {
               }
           `
         })
-        if (result.error && (result.error.message || result.error.errors)) {
-          throw new Error(`${result.error.message ? result.error.message : result.error.errors[0].message}`)
-        }
+        debug(`addUserFollowedBy edge = ${JSON.stringify(result, null, 2)}`)
+        throwErrorIfGraphQLErrorOccurred(result)
+        debug(`saveFollowers: added follow edge successfully`)
       })
     )
+  }
+
+  async createPost(postObject) {
+    // TODO how to handle the to field? Now the post is just created, doesn't matter who is the recipient
+    // createPost
+    const title = postObject.summary ? postObject.summary : postObject.content.split(' ').slice(0, 5).join(' ')
+    const id = extractIdFromActivityId(postObject.id)
+    let result = await client.mutate({
+      mutation: gql`
+        mutation {
+            CreatePost(content: "${postObject.content}", title: "${title}", id: "${id}") {
+                id
+            }
+        }
+      `
+    })
+
+    throwErrorIfGraphQLErrorOccurred(result)
+
+    // ensure user and add author to post
+    const userId = await this.ensureUser(postObject.attributedTo)
+    result = await client.mutate({
+      mutation: gql`
+        mutation {
+            AddPostAuthor(from: {id: "${userId}"}, to: {id: "${id}"})
+        }
+      `
+    })
+
+    throwErrorIfGraphQLErrorOccurred(result)
+  }
+
+  async createComment(postObject) {
+    let result = await client.mutate({
+      mutation: gql`
+        mutation {
+            CreateComment(content: "${postObject.content}") {
+                id
+            }
+        }
+      `
+    })
+
+    throwErrorIfGraphQLErrorOccurred(result)
+    const postId = extractIdFromActivityId(postObject.inReplyTo)
+
+    result = await client.mutate({
+      mutation: gql`
+        mutation {
+            AddCommentPost(from: { id: "${result.data.CreateComment.id}", to: { id: "${postId}" }}) {
+                id
+            }
+        }
+      `
+    })
+
+    throwErrorIfGraphQLErrorOccurred(result)
   }
 
   /**
@@ -256,6 +317,7 @@ export default class NitroDatasource {
    * @returns {Promise<*>}
    */
   async ensureUser(actorId) {
+    debug(`inside ensureUser`)
     const queryResult = await client.query({
       query: gql`
           query {
@@ -267,9 +329,11 @@ export default class NitroDatasource {
     })
 
     if (queryResult.data && Array.isArray(queryResult.data.User) && queryResult.data.User.length > 0) {
+      debug(`ensureUser: user exists.. return id`)
       // user already exists.. return the id
       return queryResult.data.User[0].id
     } else {
+      debug(`ensureUser: user not exists.. createUser`)
       // user does not exist.. create it
       const createUserResult = await client.mutate({
         mutation: gql`
@@ -283,6 +347,7 @@ export default class NitroDatasource {
 
       if (createUserResult.data && createUserResult.data.CreateUser) {
         // user created.. now disable the user
+        debug(`ensureUser user created successfully`)
         const userId = createUserResult.data.CreateUser.id
         const result = await client.mutate({
           mutation: gql`
@@ -294,13 +359,11 @@ export default class NitroDatasource {
           `
         })
 
-        if (result.error && (result.error.errors || result.error.message)) {
-          throw new Error(result.error.message ? result.error.message : result.error.errors[0].message)
-        }
+        throwErrorIfGraphQLErrorOccurred(result)
 
         return userId
-      } else if (createUserResult.error && (createUserResult.error.errors || createUserResult.error.message)) {
-        throw new Error(createUserResult.error.message ? createUserResult.error.message : createUserResult.error.errors[0].message)
+      } else {
+        throwErrorIfGraphQLErrorOccurred(createUserResult)
       }
     }
   }
