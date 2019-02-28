@@ -1,9 +1,12 @@
-'use strict'
-import { sendCollection } from "../utils"
+import { sendCollection } from '../utils/collection'
+import { serveUser } from './serveUser'
+import { activityPub } from '../ActivityPub'
+import verify from './verify'
+
 import express from 'express'
+
 const router = express.Router()
 const debug = require('debug')('ea:user')
-import serveUser from '../utils/serveUser'
 
 router.get('/:name', async function (req, res, next) {
   debug('inside user.js -> serveUser')
@@ -32,17 +35,6 @@ router.get('/:name/followers', (req, res) => {
   }
 })
 
-router.get('/:name/inbox', (req, res) => {
-  debug('inside user.js -> serveInboxCollection')
-  const name = req.params.name
-  if (!name) {
-    return res.status(400).send('Bad request! Please specify a name.')
-  } else {
-    const collectionName = req.query.page ? 'inboxPage' : 'inbox'
-    sendCollection(collectionName, req, res)
-  }
-})
-
 router.get('/:name/outbox', (req, res) => {
   debug('inside user.js -> serveOutboxCollection')
   const name = req.params.name
@@ -54,43 +46,48 @@ router.get('/:name/outbox', (req, res) => {
   }
 })
 
-router.post('/:name/inbox', async function (req, res, next) {
+router.post('/:name/inbox', verify, async function (req, res, next) {
   debug(`body = ${JSON.stringify(req.body, null, 2)}`)
-  const name = req.params.name
-
+  debug(`actorId = ${req.body.actor}`)
+  // const result = await saveActorId(req.body.actor)
   switch (req.body.type) {
-    case 'Create':
-      await req.app.get('ap').handleCreateActivity(req.body).catch(next)
-      break
-    case 'Undo':
-      await req.app.get('ap').handleUndoActivity(req.body).catch(next)
-      break
-    case 'Follow':
-      debug(`handleFollow`)
-      await req.app.get('ap').handleFollowActivity(req.body).catch(next)
-      debug(`handledFollow`)
-      break
-    case 'Delete':
-      await req.app.get('ap').handleDeleteActivity(req.body).catch(next)
-      break
-    case 'Update':
-
-    case 'Accept':
-
-    case 'Reject':
-
-    case 'Add':
-
-    case 'Remove':
-
-    case 'Like':
-
-    case 'Announce':
-      debug('else!!')
-      debug(JSON.stringify(req.body, null, 2))
+  case 'Create':
+    await activityPub.handleCreateActivity(req.body).catch(next)
+    break
+  case 'Undo':
+    await activityPub.handleUndoActivity(req.body).catch(next)
+    break
+  case 'Follow':
+    await activityPub.handleFollowActivity(req.body).catch(next)
+    break
+  case 'Delete':
+    await activityPub.handleDeleteActivity(req.body).catch(next)
+    break
+  /* eslint-disable */
+  case 'Update':
+    await activityPub.handleUpdateActivity(req.body).catch(next)
+    break
+  case 'Accept':
+    await activityPub.handleAcceptActivity(req.body).catch(next)
+  case 'Reject':
+    // Do nothing
+    break
+  case 'Add':
+    break
+  case 'Remove':
+    break
+  case 'Like':
+    await activityPub.handleLikeActivity(req.body).catch(next)
+    break
+  case 'Dislike':
+    await activityPub.handleDislikeActivity(req.body).catch(next)
+    break
+  case 'Announce':
+    debug('else!!')
+    debug(JSON.stringify(req.body, null, 2))
   }
-
+  /* eslint-enable */
   res.status(200).end()
 })
 
-module.exports = router
+export default router
