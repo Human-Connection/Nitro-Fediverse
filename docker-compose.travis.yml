@@ -16,6 +16,9 @@ services:
     networks:
       - hc-network
       - hc-neo4j
+    ports:
+      - 4000:4000
+      - 4001:4001
     image: humanconnection/nitro-backend:latest
     depends_on:
       - neo4j
