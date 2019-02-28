@@ -10,7 +10,7 @@ router.get('/', async function (req, res) {
   if (!resource || !resource.includes('acct:')) {
     return res.status(400).send('Bad request. Please make sure "acct:USER@DOMAIN" is what you are sending as the "resource" query parameter.')
   } else {
-    const nameAndDomain = resource.replace('acct:','')
+    const nameAndDomain = resource.replace('acct:', '')
     const name = nameAndDomain.split('@')[0]
 
     const result = await req.app.get('ap').dataSource.client.query({

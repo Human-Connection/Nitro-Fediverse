@@ -10,7 +10,7 @@ router.post('/create', function (req, res) {
   // pass in a name for an account, if the account doesn't exist, create it!
   const account = req.body.account
   if (account === undefined) {
-    return res.status(400).json({msg: 'Bad request. Please make sure "account" is a property in the POST body.'})
+    return res.status(400).json({ msg: 'Bad request. Please make sure "account" is a property in the POST body.' })
   }
   let db = req.app.get('db')
   let domain = req.app.get('domain')
@@ -26,8 +26,8 @@ router.post('/create', function (req, res) {
     $privkey: pair.private,
     $actor: JSON.stringify(actorRecord),
     $webfinger: JSON.stringify(webfingerRecord)
-  }, (err, accounts) => {
-    res.status(200).json({msg: 'ok', apikey})
+  }, () => {
+    res.status(200).json({ msg: 'ok', apikey })
   })
 })
 
