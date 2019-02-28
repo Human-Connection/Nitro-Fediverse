@@ -2,10 +2,20 @@ version: "3.7"
 
 services:
   neo4j:
+    image: humanconnection/neo4j:latest
+    build:
+      context: neo4j
+    networks:
+      - hc-neo4j
     environment:
       - NEO4J_AUTH=none
     ports:
       - 7687:7687
       - 7474:7474
   backend:
+    networks:
+      - hc-network
+      - hc-neo4j
     image: humanconnection/nitro-backend:latest
+    depends_on:
+      - neo4j

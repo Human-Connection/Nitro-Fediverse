@@ -15,3 +15,5 @@ services:
 networks:
   hc-network:
     name: hc-network
+  hc-neo4j:
+    name: hc-neo4j
