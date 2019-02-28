@@ -1,4 +1,5 @@
 # Nitro-Fediverse
+[![Build Status](https://travis-ci.com/Human-Connection/Nitro-Fediverse.svg?branch=master)](https://travis-ci.com/Human-Connection/Nitro-Fediverse)
 
 This repository is maintained by an active community.
 We have regular meetings, run pair-programmings and tutorials in our [online learner community at Agile Ventures](https://www.agileventures.org/projects/human-connection).
@@ -40,13 +41,6 @@ In the `webfinger.feature` you can see how the Webfinger and also the Actor Obje
 
 Taking a look into `collections.feature` will show you how, for now, empty collections look like
 
-#### ToDo's:
-
-- [ ] Make all tests run
-- [ ] Add Block activity for blocking users to interact with my content
-- [ ] Up vote instead of shout for a comment
-- [ ] Add Signature verification test
-- [ ] Improve README
 
 ## Start contributing
 
@@ -153,6 +147,14 @@ You can also __*see*__ all debugging output available by prefixing with `DEBUG=e
 
 :construction: Coming soon.
 
+## ToDo's:
+
+- [ ] Make all tests run
+- [ ] Add Block activity for blocking users to interact with my content
+- [ ] Up vote instead of shout for a comment
+- [ ] Add Signature verification test
+- [ ] Send an Article via ActivityPub when a Post is created
+- [ ] Improve README
 
 ## License
 
