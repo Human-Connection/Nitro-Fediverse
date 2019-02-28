@@ -66,8 +66,14 @@ docker-compose up
 Application is running on [localhost:4100](http://localhost:4100/)
 
 ## Testing
+Cucumber features are used to test the acceptance of the API against the Standard.
+To run the Acceptance tests first install and start the [backend](https://github.com/Human-Connection/Nitro-Backend/).
 
-Run:
+Then go ahead and start the seeder API with disabled permissions:
+```sh
+yarn test:before:seeder
+``` 
+After that you will be able to run the tests with:
 ```sh
 yarn run test
 ```
@@ -93,6 +99,11 @@ DOMAIN=9bab9fd1.ngrok.io docker-compose up
 ```
 depending on your setup.
 
+## Debugging
+
+This repository uses [**debug**](https://www.npmjs.com/package/debug) as logging tool. Just take a look at the imports of a file and search for e.g. `require('debug')('ea:utils')`. If you  want to see the debugging output for this specific file, run one of the above commands prefixed with `DEBUG=ea:utils`.  
+
+You can also __*see*__ all debugging output available by prefixing with `DEBUG=ea*`.
 
 ## Deployment
 
