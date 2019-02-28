@@ -1,108 +1,128 @@
 // features/support/steps.js
-const { Given, When, Then, AfterAll} = require('cucumber')
-const { expect } = require('chai')
-const client = require('../../../src/apollo-client')
-const gql = require('graphql-tag')
+import { Given, When, Then, AfterAll, BeforeAll } from 'cucumber'
+import { expect } from 'chai'
+import Factory from '../../factories'
 const debug = require('debug')('ea:test:steps')
 
-const fediverseUrl = 'http://localhost:4100'
+let client = null
+let factory = null
 
-let currentUserIds = []
-
-async function createUser(slug) {
-  const res = await client.mutate({
-    mutation: gql`
-      mutation {
-        CreateUser(name: "${slug}", password: "mysecretpw", email: "${slug}@localhost.local", slug: "${slug}") {
-          slug
-          id
-        }
-      }
-    `
+function createUser (slug) {
+  debug(`creating user ${slug}`)
+  return factory.create('User', {
+    name: slug,
+    email: 'example@test.org',
+    password: '1234'
   })
-  expect(res.data.CreateUser.slug).to.equal(slug)
-  currentUserIds.push(res.data.CreateUser.id)
-  debug(`\nuser created with id = ${res.data.CreateUser.id}`)
+  // await login({ email: 'example@test.org', password: '1234' })
 }
 
-AfterAll('', function () {
-  debug('All the tests are done! Deleting Users --> ' + currentUserIds)
-  currentUserIds.forEach(async (id) => {
-    await client.mutate({
-      mutation: gql`
-          mutation {
-              DeleteUser(id: "${id}") {
-                  name
-              }
-          }
-      `
-    })
-  })
+BeforeAll('Test setup', async () => {
+  factory = Factory()
+  client = factory.graphQLClient
+})
 
-  currentUserIds = []
+AfterAll('Clean up the test data', function () {
+  debug('All the tests are done! Deleting test data')
 })
 
 Given('our own server runs at {string}', function (string) {
   // just documenation
 })
 
-Given('we have the following users in our database:', function (dataTable) {
-  const hashes = dataTable.hashes()
-  hashes.forEach(async (user) => {
-    await createUser(user.Slug)
-  })
+Given('we have the following users in our database:', async function (dataTable) {
+  await Promise.all(dataTable.hashes().map((user) => {
+    return createUser(user.Slug)
+  }))
 })
 
 When('I send a GET request to {string}', async function (pathname) {
   const response = await this.get(pathname)
-  this.lastResponse = response.lastResponse
   this.lastContentType = response.lastContentType
+
+  this.lastResponses.push(response.lastResponse)
+  this.statusCode = response.statusCode
 })
 
-Then('I receive the following json:', function (docString) {
-  expect(JSON.parse(docString)).to.eql(JSON.parse(this.lastResponse))
-})
-
-Then('I expect the Content-Type to be:', function (contentType) {
-  expect(contentType).to.equal(this.lastContentType)
-})
-
-When('I send an activity to {string}', async function (inboxUrl, activity) {
+When('I send a POST request with the following activity to {string}:', async function (inboxUrl, activity) {
   debug(`inboxUrl = ${inboxUrl}`)
   debug(`activity = ${activity}`)
   this.lastInboxUrl = inboxUrl
   this.lastActivity = activity
   const response = await this.post(inboxUrl, activity)
-  this.statusCode = response.statusCode
+
+  this.lastResponses.push(response.lastResponse)
   this.lastResponse = response.lastResponse
+  this.statusCode = response.statusCode
 })
 
-Then('the status code is {int}', function (statusCode) {
-  debug(`lastResponse = ${this.lastResponse}`)
-  expect(statusCode).to.equal(this.statusCode)
+Then('I receive the following json:', function (docString) {
+  const parsedDocString = JSON.parse(docString)
+  const parsedLastResponse = JSON.parse(this.lastResponses.shift())
+  if (Array.isArray(parsedDocString.orderedItems)) {
+    parsedDocString.orderedItems.forEach((el) => {
+      delete el.id
+      if (el.object) delete el.object.published
+    })
+    parsedLastResponse.orderedItems.forEach((el) => {
+      delete el.id
+      if (el.object) delete el.object.published
+    })
+  }
+  if (parsedDocString.publicKey && parsedDocString.publicKey.publicKeyPem) {
+    delete parsedDocString.publicKey.publicKeyPem
+    delete parsedLastResponse.publicKey.publicKeyPem
+  }
+  expect(parsedDocString).to.eql(parsedLastResponse)
+})
+
+Then('I expect the Content-Type to be {string}', function (contentType) {
+  expect(this.lastContentType).to.equal(contentType)
+})
+
+Then('I expect the status code to be {int}', function (statusCode) {
+  expect(this.statusCode).to.equal(statusCode)
 })
 
 Then('the activity is added to the {string} collection', async function (collectionName) {
   const response = await this.get(this.lastInboxUrl.replace('inbox', collectionName) + '?page=true')
-  debug(`lastResponse = ${response.lastResponse}`)
   debug(`orderedItems = ${JSON.parse(response.lastResponse).orderedItems}`)
   expect(JSON.parse(response.lastResponse).orderedItems).to.include(JSON.parse(this.lastActivity).object)
 })
 
-Then('the follower is added to the followers collection', async function (follower) {
-  const response = await this.get(this.lastInboxUrl.replace('inbox', 'followers') + '?page=true')
+Then('the follower is added to the followers collection of {string}', async function (userName, follower) {
+  const response = await this.get(`/activitypub/users/${userName}/followers?page=true`)
   const responseObject = JSON.parse(response.lastResponse)
   expect(responseObject.orderedItems).to.include(follower)
+})
+
+Then('the follower is removed from the followers collection of {string}', async function (userName, follower) {
+  const response = await this.get(`/activitypub/users/${userName}/followers?page=true`)
+  const responseObject = JSON.parse(response.lastResponse)
+  expect(responseObject.orderedItems).to.not.include(follower)
 })
 
 Then('the activity is added to the users inbox collection', async function () {
 
 })
 
-Then('the response body looks like:', function (activity) {
-  const expected = JSON.parse(activity)
-  //const actual = JSON.parse(this.lastResponse)
-  delete expected.id
-  //delete actual.id
-  expect(JSON.stringify(expected, null, 2)).to.equal(JSON.stringify(actual, null, 2))
+Then('the post with id {string} to be created', async function (id) {
+  const result = await client.request(`
+      query {
+          Post(id: "${id}") {
+              title
+          }
+      }
+   `)
+  expect(result.data.Post).to.be.an('array').that.is.not.empty // eslint-disable-line
+})
+
+Then('the object is removed from the outbox collection of {string}', async function (name, object) {
+  const response = await this.get(`/activitypub/users/${name}/outbox?page=true`)
+  const parsedResponse = JSON.parse(response.lastResponse)
+  expect(parsedResponse.orderedItems).to.not.include(object)
+})
+
+Then('I send a GET request to {string} and expect a ordered collection', () => {
+
 })

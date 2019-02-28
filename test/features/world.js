@@ -1,36 +1,40 @@
 // features/support/world.js
-const { setWorldConstructor } = require('cucumber')
-const request = require('request')
-const debug = require('debug')('hc-ap:world')
+import { setWorldConstructor } from 'cucumber'
+import request from 'request'
+const debug = require('debug')('ea:test:world')
 
 class CustomWorld {
-  constructor() {
-    // webfinger.feature
-    this.lastResponse = null
+  constructor () {
+    // webFinger.feature
+    this.lastResponses = []
     this.lastContentType = null
     this.lastInboxUrl = null
     this.lastActivity = null
-    // activity-note.feature
+    // object-article.feature
     this.statusCode = null
   }
-  get(pathname) {
+  get (pathname) {
     return new Promise((resolve, reject) => {
-      request(`http://localhost:4100/${this.replaceSlashes(pathname)}`, function (error, response, body) {
+      request(`http://localhost:4100/${this.replaceSlashes(pathname)}`, {
+        headers: {
+          'Accept': 'application/activity+json'
+        }}, function (error, response, body) {
         if (!error) {
           debug(`get response = ${response.headers['content-type']}`)
-          resolve({ lastResponse: body, lastContentType: response.headers['content-type'], statusCode: response.statusCode})
+          debug(`body = ${body}`)
+          resolve({ lastResponse: body, lastContentType: response.headers['content-type'], statusCode: response.statusCode })
         } else {
-          reject({})
+          reject(error)
         }
       })
     })
   }
 
-  replaceSlashes(pathname) {
-    return pathname.replace(/^\/+/, '');
+  replaceSlashes (pathname) {
+    return pathname.replace(/^\/+/, '')
   }
 
-  post(pathname, activity) {
+  post (pathname, activity) {
     return new Promise((resolve, reject) => {
       request({
         url: `http://localhost:4100/${this.replaceSlashes(pathname)}`,
@@ -42,9 +46,9 @@ class CustomWorld {
       }, function (error, response, body) {
         if (!error) {
           debug(`post response = ${response.headers['content-type']}`)
-          resolve({ lastResponse: body, lastContentType: response.headers['content-type'], statusCode: response.statusCode})
+          resolve({ lastResponse: body, lastContentType: response.headers['content-type'], statusCode: response.statusCode })
         } else {
-          reject({})
+          reject(error)
         }
       })
     })
