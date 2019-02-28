@@ -11,7 +11,15 @@ services:
       - 4100:4100
     environment:
       - DOMAIN=localhost
-
+      - ACTIVITYPUB_URI=http://localhost:4100
+      - ACTIVITYPUB_DOMAIN=localhost
+      - ACTIVITYPUB_PORT=4100
+      - GRAPHQL_URI=http://localhost:4000
+      - CLIENT_URI=http://localhost:3000
+      - JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSmVubnkgUm9zdG9jayIsInNsdWciOiJqZW5ueS1yb3N0b2NrIiwiaWF0IjoxNTUxMzEwMjAwLCJleHAiOjEwMTkxMzEwMjAwLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQwMDEiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjQwMDAiLCJzdWIiOiJqZW5ueS1yb3N0b2NrIn0.uqjCvDVhDVyBD1cKzbfsCI6d0uZvecHjGvvovMUXI64
+      - PRIVATE_KEY_PASSPHRASE=6f5e4C1c7Ba9A60c3aA4s9K2sD048a5AdfA5ac6bd3e76aBsDCd
+    depends_on:
+      - backend
 networks:
   hc-network:
     name: hc-network
