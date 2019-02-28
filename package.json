@@ -12,8 +12,8 @@
     "dev": "nodemon --exec babel-node src/",
     "build": "babel src/ -d dist/ --copy-files",
     "lint": "eslint src --config .eslintrc.js --fix",
-    "test:cucumber": "wait-on tcp:41aaa00 && cucumber-js --require-module @babel/register --exit test/",
-    "test": "run-p --race server test:cucumber"
+    "test:cucumber": "wait-on tcp:4100 && cucumber-js --require-module @babel/register --exit test/",
+    "test": "run-p --race dev test:cucumber"
   },
   "dependencies": {
     "activitystrea.ms": "^2.1.3",

@@ -24,10 +24,7 @@ Feature: Webfinger discovery
       ]
     }
     """
-    And I expect the Content-Type to be:
-    """
-    application/jrd+json; charset=utf-8
-    """
+    And I expect the Content-Type to be "application/jrd+json; charset=utf-8"
 
   Scenario: User does not exist
     When I send a GET request to "/.well-known/webfinger?resource=acct:nonexisting@localhost"
