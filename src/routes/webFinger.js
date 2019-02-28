@@ -1,7 +1,6 @@
-'use strict'
+import { createWebFinger } from '../utils/actor'
+
 import express from 'express'
-import client from '../apollo-client'
-import { createWebFinger } from '../utils'
 import gql from 'graphql-tag'
 
 const router = express.Router()
@@ -14,7 +13,7 @@ router.get('/', async function (req, res) {
     const nameAndDomain = resource.replace('acct:','')
     const name = nameAndDomain.split('@')[0]
 
-    const result = await client.query({
+    const result = await req.app.get('ap').dataSource.client.query({
       query: gql`
         query {
           User(slug: "${name}") {
@@ -33,4 +32,4 @@ router.get('/', async function (req, res) {
   }
 })
 
-module.exports = router
+export default router
