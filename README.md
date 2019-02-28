@@ -4,6 +4,50 @@ This repository is maintained by an active community.
 We have regular meetings, run pair-programmings and tutorials in our [online learner community at Agile Ventures](https://www.agileventures.org/projects/human-connection).
 [Join our Chat here](https://discordapp.com/invite/6ub73U3) and watch our [latest meetings or pair-programmings](https://www.youtube.com/playlist?list=PLH_dEBFTpMp78-QwtsRwVL7l-1kRdhR0P).
 
+
+The ActivityPub service has the following abilities:
+* receiving __*Article*__ and __*Note*__ Objects at a users inbox
+* receiving __*Like*__ and __*Follow*__ Activities at a users inbox
+* receiving __*Undo*__ and __*Delete*__ Activities for Articles and Notes at a users inbox
+* serving __*Webfinger*__ records and __*Actor*__ Objects
+* serving __*Followers*__, __*Following*__ and __*Outbox*__ collections
+
+**->** *It is not differed between a "users" inbox and a "sharedInbox" by invoking service logic!*
+
+## Explanation
+**->** This explanation assumes you are using the __*NitroDataSource*__!
+  
+### Like and Follow
+
+When a __*Like*__ activity is received, it get translated into a GraphQL query to shout a post or up vote a comment.  
+The __*Follow*__ activity first creates a user for the sending actor, when no user exists, and then adds a *followedBy* relationship to indicate friendship 
+
+### Article and Note
+
+__*Article's*__ and __*Note's*__ both get translated into a `Post` node. The wrapped create activity ID's are saved along the posts to recreate the activity for serving the outbox etc.
+
+### Undo and Delete
+
+When receiving an __*Undo*__ activity with a follow object, then the follow relationship is removed and with this the follow activity undone.
+  
+When receiving a __*Delete*__ activity with a Note or Article Object, the `Post` node will be deleted.
+
+### Serving Webfinger and Actor Object
+
+In the `webfinger.feature` you can see how the Webfinger and also the Actor Object response looks like
+
+### Serving Collections
+
+Taking a look into `collections.feature` will show you how, for now, empty collections look like
+
+#### ToDo's:
+
+- [ ] Make all tests run
+- [ ] Add Block activity for blocking users to interact with my content
+- [ ] Up vote instead of shout for a comment
+- [ ] Add Signature verification test
+- [ ] Improve README
+
 ## Start contributing
 
 Clone the repository:

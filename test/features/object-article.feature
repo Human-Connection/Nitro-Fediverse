@@ -13,16 +13,16 @@ Feature: Send and receive Articles
     """
     {
       "@context": "https://www.w3.org/ns/activitystreams",
-      "id": "https://aronda.org/users/marvin/status/lka7dfzkjn2398hsfd",
+      "id": "https://aronda.org/activitypub/users/marvin/status/lka7dfzkjn2398hsfd",
       "type": "Create",
-      "actor": "https://aronda.org/users/marvin",
+      "actor": "https://aronda.org/activitypub/users/marvin",
       "object": {
-          "id": "https://aronda.org/users/marvin/status/kljsdfg9843jknsdf",
+          "id": "https://aronda.org/activitypub/users/marvin/status/kljsdfg9843jknsdf",
           "type": "Article",
           "published": "2019-02-07T19:37:55.002Z",
-          "attributedTo": "https://aronda.org/users/marvin",
+          "attributedTo": "https://aronda.org/activitypub/users/marvin",
           "content": "Hi Max, how are you?",
-          "to": "https://localhost:4100/activitypub/users/max"
+          "to": "as:Public"
       }
     }
     """

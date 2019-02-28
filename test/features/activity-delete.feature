@@ -19,7 +19,7 @@ Feature: Delete an object
           "published": "2019-02-07T19:37:55.002Z",
           "attributedTo": "https://aronda.org/users/bernd-das-brot",
           "content": "Hi Max, how are you?",
-          "to": "https://localhost:4100/activitypub/users/moritz"
+          "to": "as:Public"
       }
     }
     """
@@ -37,7 +37,7 @@ Feature: Delete an object
         "published": "2019-02-07T19:37:55.002Z",
         "attributedTo": "https://aronda.org/users/bernd-das-brot",
         "content": "Hi Max, how are you?",
-        "to": "https://localhost:4100/activitypub/users/moritz"
+        "to": "as:Public"
       }
     }
     """
@@ -50,6 +50,6 @@ Feature: Delete an object
       "published": "2019-02-07T19:37:55.002Z",
       "attributedTo": "https://aronda.org/users/bernd-das-brot",
       "content": "Hi Max, how are you?",
-      "to": "https://localhost:4100/activitypub/users/moritz"
+      "to": "as:Public"
     }
     """
