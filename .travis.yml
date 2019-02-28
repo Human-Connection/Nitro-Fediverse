@@ -1,0 +1,30 @@
+language: node_js
+node_js:
+  - "10"
+cache:
+  yarn: true
+  directories:
+    - node_modules
+services:
+  - docker
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.23.2
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - yarn global add wait-on
+
+install:
+  - docker build --build-arg BUILD_COMMIT=$TRAVIS_COMMIT --target production -t humanconnection/nitro-fediverse:latest .
+  - docker-compose -f docker-compose.yml -f docker-compose.travis.yml up -d
+  - wait-on http://localhost:4100 http://loclahost:4000
+
+script:
+  - docker-compose exec backend yarn test:before:seeder
+  - wait-on http://localhost:4001
+  - docker-compose exec fediverse yarn lint
+  - docker-compose exec fediverse yarn test --ci
