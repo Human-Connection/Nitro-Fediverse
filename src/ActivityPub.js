@@ -17,7 +17,6 @@ import router from './routes'
 import dotenv from 'dotenv'
 import express from 'express'
 import http from 'http'
-import { resolve } from 'path'
 import Collections from './Collections'
 const debug = require('debug')('ea')
 const numCPUs = os.cpus().length
