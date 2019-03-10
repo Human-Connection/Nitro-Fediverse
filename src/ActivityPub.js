@@ -35,10 +35,11 @@ export default class ActivityPub {
   }
   static init () {
     if (!activityPub) {
-      dotenv.config({ path: resolve('src', 'activitypub', '.env') })
+      dotenv.config()
       const port = process.env.ACTIVITYPUB_PORT
       activityPub = new ActivityPub(process.env.ACTIVITYPUB_DOMAIN || 'localhost', port || 4100)
       // standalone clustered ActivityPub service
+      // TODO make sure cluster is placed right. Maybe need to be placed above the if branch
       if (cluster.isMaster) {
         debug(`master with pid = ${process.pid} is running`)
         for (let i = 0; i < numCPUs; i++) {

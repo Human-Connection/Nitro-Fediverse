@@ -7,7 +7,7 @@ Feature: Receiving collections
       | Slug              |
       | renate-oberdorfer |
 
-  Scenario: Send a request to the outbox URI of peter-lustig and expect a ordered collection
+  Scenario: Send a request to the outbox URI of renate-oberdorfer and expect a ordered collection
     When I send a GET request to "/activitypub/users/renate-oberdorfer/outbox"
     Then I expect the status code to be 200
     And I receive the following json:
@@ -22,7 +22,7 @@ Feature: Receiving collections
     }
     """
 
-  Scenario: Send a request to the following URI of peter-lustig and expect a ordered collection
+  Scenario: Send a request to the following URI of renate-oberdorfer and expect a ordered collection
     When I send a GET request to "/activitypub/users/renate-oberdorfer/following"
     Then I expect the status code to be 200
     And I receive the following json:
@@ -37,7 +37,7 @@ Feature: Receiving collections
     }
     """
 
-  Scenario: Send a request to the followers URI of peter-lustig and expect a ordered collection
+  Scenario: Send a request to the followers URI of renate-oberdorfer and expect a ordered collection
     When I send a GET request to "/activitypub/users/renate-oberdorfer/followers"
     Then I expect the status code to be 200
     And I receive the following json:
@@ -52,7 +52,7 @@ Feature: Receiving collections
     }
     """
 
-  Scenario: Send a request to the outbox URI of peter-lustig and expect a paginated outbox collection
+  Scenario: Send a request to the outbox URI of renate-oberdorfer and expect a paginated outbox collection
     When I send a GET request to "/activitypub/users/renate-oberdorfer/outbox?page=true"
     Then I expect the status code to be 200
     And I receive the following json:
@@ -68,7 +68,7 @@ Feature: Receiving collections
     }
     """
 
-  Scenario: Send a request to the following URI of peter-lustig and expect a paginated following collection
+  Scenario: Send a request to the following URI of renate-oberdorfer and expect a paginated following collection
     When I send a GET request to "/activitypub/users/renate-oberdorfer/following?page=true"
     Then I expect the status code to be 200
     And I receive the following json:
@@ -84,7 +84,7 @@ Feature: Receiving collections
     }
     """
 
-  Scenario: Send a request to the followers URI of peter-lustig and expect a paginated followers collection
+  Scenario: Send a request to the followers URI of renate-oberdorfer and expect a paginated followers collection
     When I send a GET request to "/activitypub/users/renate-oberdorfer/followers?page=true"
     Then I expect the status code to be 200
     And I receive the following json:

@@ -19,6 +19,7 @@ function createUser (slug) {
 
 BeforeAll('Test setup', async () => {
   factory = Factory()
+  await factory.authenticateAs({ email: 'example@test.org', password: '1234'})
   client = factory.graphQLClient
 })
 
