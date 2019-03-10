@@ -6,46 +6,45 @@ Feature: Follow a user
   Background:
     Given our own server runs at "http://localhost:4100"
     And we have the following users in our database:
-      | Slug               |
-      | peter-lustiger     |
-      | bob-der-baumeister |
-      | karl-heinz         |
+      | Slug          |
+      | karl-heinz    |
+      | peter-lustiger|
 
   Scenario: Send a follow to a user inbox and make sure it's added to the right followers collection
-    When I send a POST request with the following activity to "/activitypub/users/peter-lustiger/inbox":
+    When I send a POST request with the following activity to "/users/karl-heinz/inbox":
     """
     {
       "@context": "https://www.w3.org/ns/activitystreams",
-      "id": "https://localhost:4100/activitypub/users/bob-der-baumeister/status/83J23549sda1k72fsa4567na42312455kad83",
+      "id": "https://localhost:4100/users/karl-heinz/status/83J23549sda1k72fsa4567na42312455kad83",
       "type": "Follow",
-      "actor": "http://localhost:4100/activitypub/users/bob-der-baumeister",
-      "object": "http://localhost:4100/activitypub/users/peter-lustiger"
+      "actor": "https://localhost:4100/users/peter-lustiger",
+      "object": "http://localhost:4100/users/karl-heinz"
     }
     """
     Then I expect the status code to be 200
-    And the follower is added to the followers collection of "peter-lustiger"
+    And the follower is added to the followers collection
     """
-    https://localhost:4100/activitypub/users/bob-der-baumeister
+    https://localhost:4100/users/peter-lustiger
     """
 
   Scenario: Send an undo activity to revert the previous follow activity
-    When I send a POST request with the following activity to "/activitypub/users/bob-der-baumeister/inbox":
+    When I send a POST request with the following activity to "/users/karl-heinz/inbox":
     """
     {
       "@context": "https://www.w3.org/ns/activitystreams",
-      "id": "https://localhost:4100/activitypub/users/peter-lustiger/status/a4DJ2afdg323v32641vna42lkj685kasd2",
+      "id": "https://localhost:4100/users/karl-heinz/status/a4DJ2afdg323v32641vna42lkj685kasd2",
       "type": "Undo",
-      "actor": "http://localhost:4100/activitypub/users/peter-lustiger",
+      "actor": "http://localhost:4100/users/peter-lustiger",
       "object": {
-        "id": "https://localhost:4100/activitypub/users/bob-der-baumeister/status/83J23549sda1k72fsa4567na42312455kad83",
+        "id": "https://localhost:4100/users/karl-heinz/status/83J23549sda1k72fsa4567na42312455kad83",
         "type": "Follow",
-        "actor": "http://localhost:4100/activitypub/users/bob-der-baumeister",
-        "object": "http://localhost:4100/activitypub/users/peter-lustiger"
+        "actor": "http://localhost:4100/users/peter-lustiger",
+        "object": "http://localhost:4100/users/karl-heinz"
       }
     }
     """
     Then I expect the status code to be 200
-    And the follower is removed from the followers collection of "peter-lustiger"
+    And the follower is removed from the followers collection
     """
-    https://localhost:4100/activitypub/users/bob-der-baumeister
+    https://localhost:4100/users/peter-lustiger
     """
